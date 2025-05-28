@@ -59,8 +59,8 @@ jobs:
     needs: [automated-api-tests, lint-backend, lint-frontend]
     if: github.ref == 'refs/heads/main'
     env:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       PRODUCTION_HOST: ${{ secrets.PRODUCTION_HOST }}
-      SESSION_SECRET: ${{ secrets.SESSION_SECRET }} # Optional: include only if used
     steps:
       - uses: actions/checkout@v4
 
@@ -74,14 +74,10 @@ jobs:
           chmod 700 ~/.ssh
           ssh-keyscan -H $PRODUCTION_HOST >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy with Docker Compose
+      - name: Deploy via Docker Compose
+        env:
+          DOCKER_HOST: ssh://transform@$PRODUCTION_HOST
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET}}
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@$PRODUCTION_HOST << 'EOF'
-            export SESSION_SECRET=${{ secrets.SESSION_SECRET }}
-            cd /var/www/myphysiotrainer  # Adjust to your app directory
-            git pull origin main
-            docker compose -f docker-compose.yml -f docker-compose.production.yml up -d --build
-          EOF
+          docker compose -p myphysiotrainer -f docker-compose.yml -f docker-compose.production.yml up -d --build
