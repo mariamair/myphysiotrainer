@@ -77,11 +77,14 @@ jobs:
           chmod 700 ~/.ssh
           ssh-keyscan -H $PRODUCTION_HOST >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
+      
+      - name: Pull latest code to server
+        run: ssh -o StrictHostKeyChecking=no $PRODUCTION_HOST_USER@$PRODUCTION_HOST "cd $PRODUCTION_HOST_PATH && git pull origin main"
 
       - name: Deploy via Docker Compose
         env:
           DOCKER_HOST: ssh://$PRODUCTION_HOST_USER@$PRODUCTION_HOST
           SESSION_SECRET: ${{ secrets.SESSION_SECRET}}
         run: |
-          echo "Running Docker compose..."
+          cd $PRODUCTION_HOST_PATH
           docker compose -p myphysiotrainer -f docker-compose.yml -f docker-compose.production.yml up -d --build
