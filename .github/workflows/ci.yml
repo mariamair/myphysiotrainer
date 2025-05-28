@@ -63,7 +63,7 @@ jobs:
     env:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       PRODUCTION_HOST: ${{ secrets.PRODUCTION_HOST }}
-      PRODUCTION_HOST_USER: ${{ PRODUCTION_HOST_USER }}
+      PRODUCTION_HOST_USER: ${{ secrets.PRODUCTION_HOST_USER }}
     steps:
       - uses: actions/checkout@v4
 
