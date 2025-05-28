@@ -1,0 +1,35 @@
+services: 
+  mongodb:
+    container_name: app-mongodb-myphysiotrainer
+    image: mongo:8.0.8
+    volumes:
+      - ./.volumes/mongodb:/data/db
+  myphysiotrainer:
+    container_name: app-myphysiotrainer
+    build: 
+      context: .
+      tags: 
+        - myphysiotrainer:1.0.0
+    depends_on:
+      - mongodb
+    restart: on-failure
+    environment:
+      # The base URL and API URL for the application.
+      - BASE_URL=${BASE_URL:-/}
+      - API_URL=${API_URL:-https://cscloud8-58.lnu.se/api/v1}
+
+      # The connection string for the MongoDB database.
+      - DB_CONNECTION_STRING=${DB_CONNECTION_STRING:-mongodb://mongodb:27017/myphysiotrainer}
+
+      # Session settings.
+      - SESSION_NAME=${SESSION_NAME:-myphysiotrainer}
+      - SESSION_SECRET=${SESSION_SECRET}
+
+      # Log settings.
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOGGER_COMBINED_LOG_FILE=${LOGGER_COMBINED_LOG_FILE:-/var/log/myphysiotrainer/combined.log}
+      - LOGGER_ERROR_LOG_FILE=${LOGGER_ERROR_LOG_FILE:-/var/log/myphysiotrainer/error.log}
+      - LOGGER_UNCAUGHT_EXCEPTION_LOG_FILE=${LOGGER_UNCAUGHT_EXCEPTION_LOG_FILE:-/var/log/myphysiotrainer/uncaught-exception.log}
+    ports:
+      - "5000:5000"
+

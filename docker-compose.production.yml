@@ -1,0 +1,11 @@
+# Docker Compose file for production settings. Extends the base docker-compose.yaml file.
+
+services:
+  mongodb:
+
+  myphysiotrainer:
+    build:
+      dockerfile: Dockerfile.production
+    environment:
+      - NODE_ENV=production
+

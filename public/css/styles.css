@@ -1,0 +1,142 @@
+:root {
+  --background: #373535;
+  --foreground: #E0E5E8;
+  --light-blue: #76DDE0;
+  --border-to-light-blue: #8FFBFF;
+  --text-box: #F5F5F5;
+  --module-var1: #6B6A6A;
+  --module-var2: #6D5050;
+  --error: #FF7373;
+}
+
+body {
+  margin: 0;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+}
+
+.container {
+  margin-left: 40px;
+  margin-top: 360px;
+}
+
+.container p {
+  font-size: 1.5rem;
+}
+
+.wrapper {
+  width: 90%;
+  margin: auto;
+}
+
+h1 {
+  color: var(--light-blue);
+  font-size: 1.5rem;
+}
+
+h2 {
+  color: var(--foreground);
+  font-size: 1.2rem;
+}
+
+h3 {
+  font-size: 1rem;
+}
+
+/* ----- Navigation ----- */
+
+header {
+  margin-left: 20px;
+  padding: 0;
+}
+
+nav ul {
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-left: 20px;
+}
+
+nav ul li {
+  display: inline;
+  list-style-type: none;
+}
+
+header a,
+ul li a {
+  text-decoration: none;
+  color: var(--foreground);
+  white-space: nowrap;
+}
+
+/* ----- Links and buttons ----- */
+
+.link {
+  text-decoration: none;
+  color: var(--light-blue);
+  border: 1px solid var(--light-blue);
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 30px;
+  display: inline-block;
+}
+
+button {
+  background-color: transparent;
+  color: var(--light-blue);
+  border: var(--light-blue) 1px solid;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  margin-top: 30px;
+  width: 330px;
+  height: 55px;
+  cursor: pointer;
+}
+
+.editing-button {
+  padding: 10px;
+  width: auto;
+}
+
+#delete-button {
+  border: var(--error) 1px solid;
+  color: #fff;
+}
+
+.list-item {
+  border: none;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* ----- Forms ----- */
+
+input {
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+  display: block;
+  margin: 10px 0;
+  padding: 0 10px;
+  width: 346px;
+  height: 40px;
+}
+
+label {
+  display: block;
+  margin-top: 20px;
+}
+
+/* ----- Lists ----- */
+
+    .list-item {
+    text-align: left;
+    font-weight: bold;
+    padding: 5px 0 5px 20px;
+    margin-bottom: 20px;
+    width: 330px;
+    height: 62px;
+  }
