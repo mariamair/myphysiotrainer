@@ -1,0 +1,82 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: Build Job
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile Code
+        run: |
+          echo "Compiling the code..."
+          sleep 2
+          echo "Compile complete."
+
+  automated-api-tests:
+    name: Automated API Tests
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Postman CLI
+        run: |
+          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+      - name: Run Postman Tests
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+        run: |
+          postman login --with-api-key $POSTMAN_API_KEY
+          postman collection run "39898331-7adb9b48-3dce-4396-a240-b8c794652c46"
+
+  lint-backend:
+    name: Lint Backend
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm install
+      - run: npx eslint ./src
+
+  lint-frontend:
+    name: Lint Frontend
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm install
+      - run: npx eslint ./public
+
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [automated-api-tests, lint-backend, lint-frontend]
+    if: github.ref == 'refs/heads/main'
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      PRODUCTION_HOST: ${{ secrets.PRODUCTION_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y openssh-client
+          eval "$(ssh-agent -s)"
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H $PRODUCTION_HOST >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy via Docker Compose
+        env:
+          DOCKER_HOST: ssh://ubuntu@$PRODUCTION_HOST
+        run: |
+          docker compose -p myphysiotrainer -f docker-compose.yml -f docker-compose.production.yml up -d --build
