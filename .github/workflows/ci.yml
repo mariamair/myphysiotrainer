@@ -83,4 +83,5 @@ jobs:
           DOCKER_HOST: ssh://$PRODUCTION_HOST_USER@$PRODUCTION_HOST
           SESSION_SECRET: ${{ secrets.SESSION_SECRET}}
         run: |
+          echo "Running Docker compose..."
           docker compose -p myphysiotrainer -f docker-compose.yml -f docker-compose.production.yml up -d --build
