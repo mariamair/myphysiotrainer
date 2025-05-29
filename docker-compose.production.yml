@@ -2,10 +2,27 @@
 
 services:
   mongodb:
+    image: mongo:8.0.8
+    container_name: app-mongodb-myphysiotrainer
+    volumes:
+      - ./.volumes/mongodb:/data/db
 
   myphysiotrainer:
-    build:
-      dockerfile: Dockerfile.production
+    image: ghcr.io/mariamair/myphysiotrainer:latest
+    container_name: app-myphysiotrainer
+    depends_on:
+      - mongodb
+    restart: on-failure
+    ports:
+      - "5000:5000"
     environment:
       - NODE_ENV=production
-
+      - BASE_URL=${BASE_URL:-/}
+      - API_URL=${API_URL:-https://myphysiotrainer.com/api/v1}
+      - DB_CONNECTION_STRING=${DB_CONNECTION_STRING:-mongodb://mongodb:27017/myphysiotrainer}
+      - SESSION_NAME=${SESSION_NAME:-myphysiotrainer}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOGGER_COMBINED_LOG_FILE=${LOGGER_COMBINED_LOG_FILE:-/var/log/myphysiotrainer/combined.log}
+      - LOGGER_ERROR_LOG_FILE=${LOGGER_ERROR_LOG_FILE:-/var/log/myphysiotrainer/error.log}
+      - LOGGER_UNCAUGHT_EXCEPTION_LOG_FILE=${LOGGER_UNCAUGHT_EXCEPTION_LOG_FILE:-/var/log/myphysiotrainer/uncaught-exception.log}
