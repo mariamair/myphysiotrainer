@@ -94,7 +94,7 @@ jobs:
         run: |
           ssh -tt -o StrictHostKeyChecking=no $PRODUCTION_HOST_USER@$PRODUCTION_HOST << 'EOF'
             export SESSION_SECRET='${{ secrets.SESSION_SECRET }}'
-            sudo docker login ghcr.io -u ${{ github.actor }} --password '${{ secrets.GITHUB_TOKEN }}'
+            sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin '${{ secrets.GITHUB_TOKEN }}'
             sudo docker pull ghcr.io/${{ github.repository_owner }}/myphysiotrainer:latest
             sudo docker compose -p myphysiotrainer -f docker-compose.yml -f docker-compose.production.yml up -d
           EOF
