@@ -104,5 +104,5 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             sudo docker pull ghcr.io/${{ github.repository_owner }}/myphysiotrainer:latest
             cd /home/$PRODUCTION_HOST_USER/deploy
-            sudo docker compose -p myphysiotrainer -f docker-compose.yml -f docker-compose.production.yml up -d
+            sudo docker compose -p myphysiotrainer -f docker-compose.yml -f docker-compose.production.yml up -d --build
           EOF
