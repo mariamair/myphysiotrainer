@@ -91,7 +91,7 @@ jobs:
           PRODUCTION_HOST_USER: ${{ secrets.PRODUCTION_HOST_USER }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET}}
         run: |
-          ssh -o StrictHostKeyChecking=no transform@159.89.1.92 << 'EOF'
+          ssh -tt -o StrictHostKeyChecking=no transform@159.89.1.92 << 'EOF'
             export SESSION_SECRET='${{ secrets.SESSION_SECRET }}'
             docker login ghcr.io -u ${{ github.actor }} --password '${{ secrets.GITHUB_TOKEN }}'
             docker pull ghcr.io/${{ github.repository_owner }}/myphysiotrainer:latest
