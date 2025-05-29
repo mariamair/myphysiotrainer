@@ -84,12 +84,7 @@ jobs:
           chmod 700 ~/.ssh
           ssh-keyscan -H $PRODUCTION_HOST >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
-
-      - name: Deploy via Docker Compose
-        env:
-          DOCKER_HOST: ssh://$PRODUCTION_HOST_USER@$PRODUCTION_HOST
-          
- 
+      
       - name: Pull and Deploy Docker Image via SSH
         env:
           PRODUCTION_HOST: ${{ secrets.PRODUCTION_HOST }}
