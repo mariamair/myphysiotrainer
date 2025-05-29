@@ -89,7 +89,7 @@ jobs:
       - name: Copy docker-compose files to server
         run: |
           scp -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
-          docker-compose.yml docker-compose.production.yml Dockerfile.production \
+          docker-compose.yml docker-compose.production.yml Dockerfile.production package.json package-lock.json \
           $PRODUCTION_HOST_USER@$PRODUCTION_HOST:/home/$PRODUCTION_HOST_USER/deploy/
 
       - name: Pull and Deploy Docker Image via SSH
