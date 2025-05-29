@@ -90,7 +90,7 @@ jobs:
         run: |
           scp -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
           docker-compose.yml docker-compose.production.yml \
-          $PRODUCTION_HOST_USER@$PRODUCTION_HOST:/home/$PRODUCTION_HOST_USER/
+          $PRODUCTION_HOST_USER@$PRODUCTION_HOST:/home/$PRODUCTION_HOST_USER/deploy/
 
       - name: Pull and Deploy Docker Image via SSH
         env:
@@ -98,11 +98,11 @@ jobs:
           PRODUCTION_HOST_USER: ${{ secrets.PRODUCTION_HOST_USER }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET}}
         run: |
-          ssh -tt -o StrictHostKeyChecking=no $PRODUCTION_HOST_USER@$PRODUCTION_HOST << 'EOF'
+          ssh -tt -o StrictHostKeyChecking=no $PRODUCTION_HOST_USER@$PRODUCTION_HOST << EOF
             pwd && ls -la
             export SESSION_SECRET='${{ secrets.SESSION_SECRET }}'
             echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             sudo docker pull ghcr.io/${{ github.repository_owner }}/myphysiotrainer:latest
-            cd /home/$PRODUCTION_HOST_USER/
+            cd /home/$PRODUCTION_HOST_USER/deploy
             sudo docker compose -p myphysiotrainer -f docker-compose.yml -f docker-compose.production.yml up -d
           EOF
