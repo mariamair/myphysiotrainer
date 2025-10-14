@@ -40,7 +40,7 @@ jobs:
           POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
         run: |
           postman login --with-api-key $POSTMAN_API_KEY
-          postman collection run "39898331-7adb9b48-3dce-4396-a240-b8c794652c46"
+          postman collection run "39898331-7adb9b48-3dce-4396-a240-b8c794652c46" --environment "39898331-cd804792-4ca7-4ac4-b041-c646cf9ee3ab"
 
   lint-backend:
     name: Lint Backend
