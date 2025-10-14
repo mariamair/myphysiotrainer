@@ -71,6 +71,7 @@ jobs:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       PRODUCTION_HOST: ${{ secrets.PRODUCTION_HOST }}
       PRODUCTION_HOST_USER: ${{ secrets.PRODUCTION_HOST_USER }}
+      PRODUCTION_HOST_DEPLOY_PATH: ${{ secrets.PRODUCTION_HOST_DEPLOY_PATH }}
     steps:
       - uses: actions/checkout@v4
 
@@ -90,7 +91,7 @@ jobs:
         run: |
           scp -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
           docker-compose.production.yml \
-          $PRODUCTION_HOST_USER@$PRODUCTION_HOST:/home/$PRODUCTION_HOST_USER/deploy/
+          $PRODUCTION_HOST_USER@$PRODUCTION_HOST:$PRODUCTION_HOST_DEPLOY_PATH/
 
       - name: Pull and Deploy Docker Image via SSH
         env:
@@ -100,10 +101,10 @@ jobs:
         run: |
           ssh -tt -o StrictHostKeyChecking=no $PRODUCTION_HOST_USER@$PRODUCTION_HOST << EOF
             pwd && ls -la
-            echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" > /home/$PRODUCTION_HOST_USER/deploy/.env
+            echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" > $PRODUCTION_HOST_DEPLOY_PATH/.env
             echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             sudo docker pull ghcr.io/${{ github.repository_owner }}/myphysiotrainer:latest
-            cd /home/$PRODUCTION_HOST_USER/myphysiotrainer/deploy
+            cd $PRODUCTION_HOST_DEPLOY_PATH
             sudo docker compose -p myphysiotrainer -f docker-compose.production.yml --env-file .env up -d
             exit
           EOF
