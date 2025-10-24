@@ -14,11 +14,10 @@ services:
       - mongodb
     restart: on-failure
     environment:
-      # The base URL and API URL for the application.
+      # The base URL of the application.
       - BASE_URL=${BASE_URL:-/}
-      - API_URL=${API_URL:-https://cscloud8-58.lnu.se/api/v1}
 
-      # The connection string for the MongoDB database.
+      # The connection string of the MongoDB database.
       - DB_CONNECTION_STRING=${DB_CONNECTION_STRING:-mongodb://mongodb:27017/myphysiotrainer}
 
       # Session settings.
