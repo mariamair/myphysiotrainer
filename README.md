@@ -26,6 +26,7 @@ The statistics function introduces an element of gamification to motivate users 
 ![View statistics](./.readme/Performance_report.jpg)
 
 ## Usage
+Go to https://myphysiotrainer.com to use the application.
 
 1. Start by creating a user account.
 2. Add a training program by giving it a name and a description.
