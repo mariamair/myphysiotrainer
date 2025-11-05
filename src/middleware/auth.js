@@ -6,6 +6,7 @@
  */
 
 import http from 'node:http'
+import { AccountModel } from '../models/AccountModel.js'
 
 /**
  * Check if the user is authorized to the requested resource.
@@ -51,6 +52,29 @@ export async function checkLogin (req, res, next) {
   try {
     if (!req.session || !req.session.user) {
       const httpStatusCode = 401
+      const error = new Error(http.STATUS_CODES[httpStatusCode])
+      error.status = httpStatusCode
+      error.statusMessage = http.STATUS_CODES[httpStatusCode]
+      throw error
+    }
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * Check if the user is administrator.
+ *
+ * @param {object} req - Express request object.
+ * @param {object} res - Express response object.
+ * @param {Function} next - Express next middleware function.
+ */
+export async function isAdmin (req, res, next) {
+  try {
+    const user = await AccountModel.findById(req.session.user.id)
+    if (!user.isAdmin) {
+      const httpStatusCode = 403
       const error = new Error(http.STATUS_CODES[httpStatusCode])
       error.status = httpStatusCode
       error.statusMessage = http.STATUS_CODES[httpStatusCode]

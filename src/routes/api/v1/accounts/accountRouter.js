@@ -6,6 +6,7 @@
  */
 
 import express from 'express'
+import { isAdmin, checkLogin } from '../../../../middleware/auth.js'
 import { AccountController } from '../../../../controllers/api/AccountController.js'
 
 export const router = express.Router()
@@ -30,4 +31,28 @@ router.get('/check-session',
 
 router.post('/logout',
   controller.logout
+)
+
+router.get('/',
+  checkLogin,
+  isAdmin,
+  controller.findAllAccounts
+)
+
+router.get('/:id',
+  checkLogin,
+  isAdmin,
+  controller.findAccount
+)
+
+router.patch('/:id',
+  checkLogin,
+  isAdmin,
+  controller.updateAccount
+)
+
+router.delete('/:id',
+  checkLogin,
+  isAdmin,
+  controller.deleteAccount
 )

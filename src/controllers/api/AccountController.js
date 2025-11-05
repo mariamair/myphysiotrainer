@@ -49,6 +49,45 @@ export class AccountController {
     }
   }
 
+
+  /**
+   * Send a JSON response containing all items.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async findAllAccounts (req, res, next) {
+    try {
+      logger.silly('Loading all account documents')
+
+      const accounts = (await AccountModel.find())
+        .map(accountDocument => accountDocument.toObject())
+
+      logger.silly('Loaded all account documents')
+
+      res.json(accounts)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * Send a JSON response containing a single item.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async findAccount(req, res, next) {
+    try {
+      // Process the document and send relevant data to the client.
+      res.json(req.doc)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   /**
    * Create a new user account.
    *
@@ -136,7 +175,7 @@ export class AccountController {
       })
 
       // Store the authenticated user in the session store.
-      req.session.user = { username: accountDocument.username, id: accountDocument.id }
+      req.session.user = { username: accountDocument.username, id: accountDocument.id, isAdmin: accountDocument.isAdmin }
 
       logger.silly(`Authenticated user: ${accountDocument.id}`)
 
@@ -205,6 +244,69 @@ export class AccountController {
       err.status = httpStatusCode
       err.statusMessage = http.STATUS_CODES[httpStatusCode]
       throw err
+    }
+  }
+
+  /**
+   * Update an item using a PATCH request.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async updateAccount (req, res, next) {
+    try {
+      logger.silly(`Updating account document: ${req.doc.id}`)
+
+      if ('username' in req.body) req.doc.username = req.body.username
+      if ('password' in req.body) req.doc.password = req.body.password
+      if ('firstName' in req.body) req.doc.firstName = req.body.firstName
+      if ('lastName' in req.body) req.doc.lastName = req.body.lastName
+      if ('email' in req.body) req.doc.email = req.body.email
+
+      if (!['username', 'password', 'firstName', 'lastName', 'email'].some(prop => prop in req.body)) {
+        const httpStatusCode = 400
+        const error = new Error(http.STATUS_CODES[httpStatusCode])
+        error.status = httpStatusCode
+        error.statusMessage = http.STATUS_CODES[httpStatusCode]
+        throw error
+      }
+
+      if (req.doc.isModified()) {
+        await req.doc.save()
+        logger.silly(`Updated account document: ${req.doc.id}`)
+      } else {
+        logger.silly(`Not updated because there were no changes to document: ${req.doc.id}`)
+      }
+
+      res
+        .status(204)
+        .end()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * Delete an item.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  async deleteAccount (req, res, next) {
+    try {
+      logger.silly(`Deleting account document: ${req.doc.id}`)
+
+      await req.doc.deleteOne()
+
+      logger.silly(`Deleted account document: ${req.doc.id}`)
+
+      res
+        .status(204)
+        .end()
+    } catch (error) {
+      next(error)
     }
   }
 }

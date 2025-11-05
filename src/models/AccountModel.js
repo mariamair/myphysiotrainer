@@ -41,6 +41,11 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
     maxLength: [254, 'The email address cannot be longer than 256 characters.']
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
+    immutable: true
   }
 })
 

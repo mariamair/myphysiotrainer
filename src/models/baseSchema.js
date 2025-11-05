@@ -22,6 +22,7 @@ const convertOptions = {
     logger.silly(`Transforming document: ${doc._id}`)
     delete ret._id
     delete ret.__v
+    delete ret.password
     logger.silly(`Transformed document: ${doc._id}`)
     return ret
   }
