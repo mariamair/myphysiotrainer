@@ -135,7 +135,8 @@ customElements.define('auth-login',
           bubbles: true,
           detail: {
             firstName: data.firstName,
-            userId: data.userId
+            userId: data.userId,
+            isAdmin: data.isAdmin
           }
         }))
       } catch (error) {

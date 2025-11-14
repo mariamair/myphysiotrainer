@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-jsdoc */
 /**
  * The desktop component module.
  *
@@ -6,6 +7,7 @@
  * @version 1.0.0
  */
 
+import '../admin-interface/index.js'
 import '../auth-login/index.js'
 import '../auth-register/index.js'
 import '../error-display/index.js'
@@ -37,6 +39,10 @@ template.innerHTML = `
   .hidden {
     display: none;
   }
+
+  .admin {
+    color: red;
+  }
 </style>
 <template id="button-template">
   <li><button type="button" class="link"></button></li>
@@ -46,6 +52,7 @@ template.innerHTML = `
     <ul>
       <li><button type="button" id="home-button" class="link hidden">Home</button></li>
       <li><button type="button" id="performance-button" class="link hidden">Performance</button></li>
+      <li><button type="button" id="admin-button" class="link hidden admin">Admin</button></li>
       <li><button type="button" id="logout-button" class="link hidden">Logout</button></li>
     </ul>
   </nav>
@@ -60,6 +67,7 @@ customElements.define('desktop-component',
   class extends HTMLElement {
     #abortController
     #accountApiUrl
+    #adminButton
     #apiUrl
     #homeButton
     #isValidSession
@@ -81,6 +89,7 @@ customElements.define('desktop-component',
       this.#abortController = new AbortController()
 
       // Get the elements in the shadow root.
+      this.#adminButton = this.shadowRoot.querySelector('#admin-button')
       this.#homeButton = this.shadowRoot.querySelector('#home-button')
       this.#logoutButton = this.shadowRoot.querySelector('#logout-button')
       this.#performanceButton = this.shadowRoot.querySelector('#performance-button')
@@ -119,6 +128,9 @@ customElements.define('desktop-component',
       this.shadowRoot.addEventListener('logged-in', (event) => {
         this.#removeAllChildren()
         this.#displayHomeAndLogoutButton()
+        if (event.detail.isAdmin === true) {
+          this.#displayAdminButton()
+        }
         this.#displayProgramList()
       }, {
         signal: this.#abortController.signal
@@ -134,6 +146,13 @@ customElements.define('desktop-component',
       this.#performanceButton.addEventListener('click', (event) => {
         this.#removeAllChildren()
         this.#displayPerformanceReport()
+      }, {
+        signal: this.#abortController.signal
+      })
+
+      this.#adminButton.addEventListener('click', (event) => {
+        this.#removeAllChildren()
+        this.#displayAdminInterface()
       }, {
         signal: this.#abortController.signal
       })
@@ -297,6 +316,10 @@ customElements.define('desktop-component',
       this.#performanceButton.classList.remove('hidden')
     }
 
+    #displayAdminButton () {
+      this.#adminButton.classList.remove('hidden')
+    }
+
     /**
      * Log out the user.
      */
@@ -405,6 +428,12 @@ customElements.define('desktop-component',
     #displayPerformanceReport () {
       const registerComponent = document.createElement('performance-report')
       registerComponent.setData(this.#apiUrl)
+      this.#wrapper.appendChild(registerComponent)
+    }
+
+    #displayAdminInterface () {
+      const registerComponent = document.createElement('admin-interface')
+      registerComponent.setData(this.#accountApiUrl)
       this.#wrapper.appendChild(registerComponent)
     }
 

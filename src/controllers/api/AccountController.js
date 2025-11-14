@@ -183,7 +183,8 @@ export class AccountController {
         .status(200)
         .json({
           firstName: accountDocument.firstName,
-          userId: accountDocument.id
+          userId: accountDocument.id,
+          isAdmin: accountDocument.isAdmin
         })
     } catch (error) {
       // Authentication failed.
