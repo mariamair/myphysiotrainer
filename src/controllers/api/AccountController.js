@@ -49,7 +49,6 @@ export class AccountController {
     }
   }
 
-
   /**
    * Send a JSON response containing all items.
    *
@@ -79,7 +78,7 @@ export class AccountController {
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
-  async findAccount(req, res, next) {
+  async findAccount (req, res, next) {
     try {
       // Process the document and send relevant data to the client.
       res.json(req.doc)
