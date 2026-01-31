@@ -4,15 +4,15 @@
 services:
   mongodb:
 
-  myphysiotrainer:
+  app:
     build:
       dockerfile: Dockerfile.development
-    environment:
-      - NODE_ENV=development
       
     # Mount the source to '/usr/src/app/src' in the container to allow for live code updates.
     # Mount the 'node_modules' directory in the container to avoid conflicts with the host.
     volumes:
-      - ./:/usr/src/app/
-      - /usr/src/app/node_modules
+      - ./src/:/app/src
+      - ./public/:/app/public
+      - ./logs:/app/logs
+      - /app/node_modules
     
