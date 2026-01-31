@@ -90,6 +90,7 @@ jobs:
       - name: Copy docker-compose files to server
         run: |
           scp -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
+          docker-compose.yml \
           docker-compose.production.yml \
           $PRODUCTION_HOST_USER@$PRODUCTION_HOST:$PRODUCTION_HOST_DEPLOY_PATH/
 
@@ -101,10 +102,14 @@ jobs:
         run: |
           ssh -tt -o StrictHostKeyChecking=no $PRODUCTION_HOST_USER@$PRODUCTION_HOST << EOF
             pwd && ls -la
-            echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" > $PRODUCTION_HOST_DEPLOY_PATH/.env
+            echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> $PRODUCTION_HOST_DEPLOY_PATH/.env.production
             echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             sudo docker pull ghcr.io/${{ github.repository_owner }}/myphysiotrainer:latest
             cd $PRODUCTION_HOST_DEPLOY_PATH
-            sudo docker compose -p myphysiotrainer -f docker-compose.production.yml --env-file .env up -d
+            sudo docker compose -p myphysiotrainer \
+            -f docker-compose.yml \
+            -f docker-compose.production.yml \
+            --env-file .env.production \
+            up -d
             exit
           EOF
