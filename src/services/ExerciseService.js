@@ -14,8 +14,6 @@ import { ExerciseModel } from '../models/ExerciseModel.js'
  * Encapsulates an ExerciseService.
  */
 export class ExerciseService {
-  #apiUrl = process.env.API_URL
-
   /**
    * Get all exercises belonging to a certain program.
    *

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * @file Defines the AccountController class.
  * @module AccountController

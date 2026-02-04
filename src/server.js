@@ -33,6 +33,7 @@ try {
     helmet.contentSecurityPolicy({
       directives: {
         ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        // eslint-disable-next-line quotes
         'script-src': ["'self'", 'cdnjs.cloudflare.com']
       }
     })

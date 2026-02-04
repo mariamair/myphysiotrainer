@@ -34,6 +34,8 @@ errorHandler.notFound = (req, res, next) => {
  * @param {object} res - Express response object.
  * @param {Function} next - Express next middleware function.
  */
+
+// eslint-disable-next-line no-unused-vars
 errorHandler.globalError = (err, req, res, next) => {
   // Log the error for debugging
   logger.error(err.message, { error: err })
