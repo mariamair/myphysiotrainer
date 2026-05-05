@@ -5,6 +5,23 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      run_tests:
+        description: "Run tests before deploy?"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      run_lint:
+        description: "Lint code before deploy?"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
 
 jobs:
   build:
@@ -30,6 +47,7 @@ jobs:
   automated-api-tests:
     name: Automated API Tests
     runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.run_tests != 'false' }}
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -46,6 +64,7 @@ jobs:
   lint-backend:
     name: Lint Backend
     runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.run_lint != 'false' }}
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -56,6 +75,7 @@ jobs:
   lint-frontend:
     name: Lint Frontend
     runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.run_lint != 'false' }}
     needs: build 
     steps:
       - uses: actions/checkout@v4
