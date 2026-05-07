@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       run_tests:
-        description: "Run tests before deploy?"
+        description: "Run tests"
         required: true
         default: "true"
         type: choice
@@ -15,7 +15,7 @@ on:
           - "true"
           - "false"
       run_lint:
-        description: "Lint code before deploy?"
+        description: "Lint code"
         required: true
         default: "true"
         type: choice
@@ -108,6 +108,12 @@ jobs:
       
       - name: Copy docker-compose files to server
         run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
+            $DO_PRODUCTION_HOST_USER@$DO_PRODUCTION_HOST << EOF
+            mkdir -p $DO_PRODUCTION_HOST_DEPLOY_PATH
+            exit
+          EOF
+
           scp -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
           docker-compose.yml \
           docker-compose.production.yml \
