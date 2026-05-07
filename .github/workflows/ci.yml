@@ -109,8 +109,8 @@ jobs:
       - name: Copy docker-compose files to server
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
-            $DO_PRODUCTION_HOST_USER@$DO_PRODUCTION_HOST << EOF
-            mkdir -p $DO_PRODUCTION_HOST_DEPLOY_PATH
+            $PRODUCTION_HOST_USER@$PRODUCTION_HOST << EOF
+            mkdir -p $PRODUCTION_HOST_DEPLOY_PATH
             exit
           EOF
 
