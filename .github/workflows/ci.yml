@@ -105,19 +105,19 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H $PRODUCTION_HOST >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
+    
+      - name: Ensure deploy path exists
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
+            $PRODUCTION_HOST_USER@$PRODUCTION_HOST \
+            "mkdir -p $PRODUCTION_HOST_DEPLOY_PATH"
       
       - name: Copy docker-compose files to server
         run: |
-          ssh -vvv -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
-            $PRODUCTION_HOST_USER@$PRODUCTION_HOST "echo connected" << EOF
-            mkdir -p $PRODUCTION_HOST_DEPLOY_PATH
-            exit
-          EOF
-
           scp -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
-          docker-compose.yml \
-          docker-compose.production.yml \
-          $PRODUCTION_HOST_USER@$PRODUCTION_HOST:$PRODUCTION_HOST_DEPLOY_PATH/
+            docker-compose.yml \
+            docker-compose.production.yml \
+            $PRODUCTION_HOST_USER@$PRODUCTION_HOST:$PRODUCTION_HOST_DEPLOY_PATH/
 
       - name: Pull and Deploy Docker Image via SSH
         env:
