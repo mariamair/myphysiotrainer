@@ -1,0 +1,1824 @@
+{
+  "info": {
+    "_postman_id": "7adb9b48-3dce-4396-a240-b8c794652c46",
+    "name": "API-tests - MyPhysioTrainer",
+    "description": "This collection tests a commonly used workflow of logging in, creating programs and exercises and fetching those programs and exercises.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "39898331"
+  },
+  "item": [
+    {
+      "name": "Health check before test run",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Content-Type is application/json\", () => {",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response has correct status code: 200\", () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains health message\", () => {",
+                  "    pm.expect(pm.response.json().message).to.equal(\"Welcome to version 1 of this RESTful API!\");",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Create programs and exercises",
+      "item": [
+        {
+          "name": "E2E - Create user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have the 'id' property in the response object\", function () {\r",
+                  "  pm.expect(response.id).to.be.a('string');\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Start with a generic word and add a random name\r",
+                  "const randomUsername = () => {\r",
+                  "    let username = 'testuser-'\r",
+                  "    \r",
+                  "    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-'\r",
+                  "    for (let i = 0; i < 15; i++) {\r",
+                  "        username += chars.charAt(Math.floor(Math.random() * chars.length))\r",
+                  "    }\r",
+                  "\r",
+                  "    return username\r",
+                  "}\r",
+                  "\r",
+                  "pm.collectionVariables.set(\"testuser-username\", randomUsername())    \r",
+                  "pm.collectionVariables.set(\"testuser-password\", pm.variables.replaceIn(\"{{$randomPassword}}\"))\r",
+                  "pm.collectionVariables.set(\"testuser-firstname\", pm.variables.replaceIn(\"{{$randomFirstName}}\"))\r",
+                  "pm.collectionVariables.set(\"testuser-lastname\", pm.variables.replaceIn(\"{{$randomLastName}}\"))"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"{{testuser-username}}\",\n    \"password\": \"{{testuser-password}}\",\n    \"firstName\": \"{{testuser-firstname}}\",\n    \"lastName\": \"{{testuser-lastname}}\",\n    \"email\": \"{{testuser-username}}@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/accounts/register",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have the 'userId', 'firstName' and 'isAdmin' property in the response object\", function () {\r",
+                  "  pm.expect(response.userId).to.be.a('string');\r",
+                  "  pm.expect(response.firstName).to.be.a('string');\r",
+                  "  pm.expect(response.isAdmin).to.equal(false);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should be successful login\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "    pm.cookies.has('myphysiotrainer');\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"{{testuser-username}}\",\n    \"password\": \"{{testuser-password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/accounts/login",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Create program 01",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate the payload data for the request\r",
+                  "\r",
+                  "let payload = {\r",
+                  "  \"title\": \"Program 01\",\r",
+                  "  \"description\": \"A very long and informative description.\"\r",
+                  "}\r",
+                  "\r",
+                  "// Store the payload in a runtime-only variable \r",
+                  "pm.variables.set('payload', JSON.stringify(payload));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have the `id` property in the response object\", function () {\r",
+                  "  pm.expect(response.id).to.be.a('string');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have status 'Created'\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "// Only set the variable if the response is successful \r",
+                  "if (pm.response.code === 201) {\r",
+                  "    pm.collectionVariables.set(\"e2e_program_id_01\", response.id)\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{{payload}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Create program 02",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate the payload data for the request\r",
+                  "\r",
+                  "let payload = {\r",
+                  "  \"title\": \"Program 02\",\r",
+                  "  \"description\": \"A very long and informative description.\"\r",
+                  "}\r",
+                  "\r",
+                  "// Store the payload in a runtime-only variable \r",
+                  "pm.variables.set('payload', JSON.stringify(payload));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have the `id` property in the response object\", function () {\r",
+                  "  pm.expect(response.id).to.be.a('string');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have status 'Created'\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "// Only set the variable if the response is successful \r",
+                  "if (pm.response.code === 201) {\r",
+                  "    pm.collectionVariables.set(\"e2e_program_id_02\", response.id)\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{{payload}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Create exercise 01",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate the payload data for the request\r",
+                  "\r",
+                  "let payload = {\r",
+                  "    \"programId\": \"{{e2e_program_id_01}}\",\r",
+                  "    \"title\": \"Straight leg raise 01\",\r",
+                  "    \"startingPosition\": \"Lie on your back with both legs straight.\",\r",
+                  "    \"steps\": [\"Tighten the front of your thigh and lift one leg straight up.\", \"Lower the leg slowly and in a controlled manner back to the starting position.\"],\r",
+                  "    \"repetitions\": \"4\",\r",
+                  "    \"repetitionMethod\": {\r",
+                  "        \"type\": \"turns\",\r",
+                  "        \"number\": \"15\"\r",
+                  "    }\r",
+                  "}\r",
+                  "\r",
+                  "// Store the payload in a runtime-only variable \r",
+                  "pm.variables.set('payload', JSON.stringify(payload));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have the `id` property in the response object\", function () {\r",
+                  "  pm.expect(response.id).to.be.a('string');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have status 'Created'\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "// Only set the variable if the response is successful \r",
+                  "if (pm.response.code === 201) {\r",
+                  "    pm.collectionVariables.set(\"e2e_exercise_id_01\", response.id)\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{{payload}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_01}}/exercises",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_01}}",
+                "exercises"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Create exercise 02",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate the payload data for the request\r",
+                  "\r",
+                  "let payload = {\r",
+                  "    \"programId\": \"{{e2e_program_id_01}}\",\r",
+                  "    \"title\": \"Straight leg raise 02\",\r",
+                  "    \"startingPosition\": \"Lie on your back with both legs straight.\",\r",
+                  "    \"steps\": [\"Tighten the front of your thigh and lift one leg straight up.\", \"Lower the leg slowly and in a controlled manner back to the starting position.\"],\r",
+                  "    \"repetitions\": \"4\",\r",
+                  "    \"repetitionMethod\": {\r",
+                  "        \"type\": \"turns\",\r",
+                  "        \"number\": \"15\"\r",
+                  "    }\r",
+                  "}\r",
+                  "\r",
+                  "// Store the payload in a runtime-only variable \r",
+                  "pm.variables.set('payload', JSON.stringify(payload));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have the `id` property in the response object\", function () {\r",
+                  "  pm.expect(response.id).to.be.a('string');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have status 'Created'\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "// Only set the variable if the response is successful \r",
+                  "if (pm.response.code === 201) {\r",
+                  "    pm.collectionVariables.set(\"e2e_exercise_id_02\", response.id)\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{{payload}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_01}}/exercises",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_01}}",
+                "exercises"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Get programs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an array in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('array');\r",
+                  "});\r",
+                  "\r",
+                  "if (response.length > 0) {\r",
+                  "    // Test structure of the first object\r",
+                  "    pm.test(\"First object should have required fields\", function () {\r",
+                  "        const first = response[0];\r",
+                  "        pm.expect(first).to.have.property(\"title\");\r",
+                  "        pm.expect(first).to.have.property(\"description\");\r",
+                  "        pm.expect(first).to.have.property(\"creator\");\r",
+                  "        pm.expect(first).to.have.property(\"id\");\r",
+                  "    });\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Get single program",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "// Test structure of the response object\r",
+                  "pm.test(\"Should have required fields\", function () {\r",
+                  "    const first = response[0];\r",
+                  "    pm.expect(response).to.have.property(\"title\");\r",
+                  "    pm.expect(response).to.have.property(\"description\");\r",
+                  "    pm.expect(response).to.have.property(\"creator\");\r",
+                  "    pm.expect(response).to.have.property(\"id\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_01}}",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_01}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Delete exercise 01",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should have status '204'\", function () {\r",
+                  "    pm.response.to.have.status(204);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_01}}/exercises/{{e2e_exercise_id_01}}",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_01}}",
+                "exercises",
+                "{{e2e_exercise_id_01}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Delete exercise 02",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should have status '204'\", function () {\r",
+                  "    pm.response.to.have.status(204);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_01}}/exercises/{{e2e_exercise_id_02}}",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_01}}",
+                "exercises",
+                "{{e2e_exercise_id_02}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Delete program 01",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should have status '204'\", function () {\r",
+                  "    pm.response.to.have.status(204);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_01}}",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_01}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Delete program 02",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should have status '204'\", function () {\r",
+                  "    pm.response.to.have.status(204);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_02}}",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_02}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Delete programs with exercises",
+      "item": [
+        {
+          "name": "E2E - Create program",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate the payload data for the request\r",
+                  "\r",
+                  "let payload = {\r",
+                  "  \"title\": \"Program 03\",\r",
+                  "  \"description\": \"A very long and informative description.\"\r",
+                  "}\r",
+                  "\r",
+                  "// Store the payload in a runtime-only variable \r",
+                  "pm.variables.set('payload', JSON.stringify(payload));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have the `id` property in the response object\", function () {\r",
+                  "  pm.expect(response.id).to.be.a('string');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have status 'Created'\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "// Only set the variable if the response is successful \r",
+                  "if (pm.response.code === 201) {\r",
+                  "    pm.collectionVariables.set(\"e2e_program_id_03\", response.id)\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{{payload}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Create exercise",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate the payload data for the request\r",
+                  "\r",
+                  "let payload = {\r",
+                  "    \"programId\": \"{{e2e_program_id_03}}\",\r",
+                  "    \"title\": \"Straight leg raise 01\",\r",
+                  "    \"startingPosition\": \"Lie on your back with both legs straight.\",\r",
+                  "    \"steps\": [\"Tighten the front of your thigh and lift one leg straight up.\", \"Lower the leg slowly and in a controlled manner back to the starting position.\"],\r",
+                  "    \"repetitions\": \"4\",\r",
+                  "    \"repetitionMethod\": {\r",
+                  "        \"type\": \"turns\",\r",
+                  "        \"number\": \"15\"\r",
+                  "    }\r",
+                  "}\r",
+                  "\r",
+                  "// Store the payload in a runtime-only variable \r",
+                  "pm.variables.set('payload', JSON.stringify(payload));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have the `id` property in the response object\", function () {\r",
+                  "  pm.expect(response.id).to.be.a('string');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have status 'Created'\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{{payload}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_03}}/exercises",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_03}}",
+                "exercises"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Create exercise",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate the payload data for the request\r",
+                  "\r",
+                  "let payload = {\r",
+                  "    \"programId\": \"{{e2e_program_id_03}}\",\r",
+                  "    \"title\": \"Straight leg raise 02\",\r",
+                  "    \"startingPosition\": \"Lie on your back with both legs straight.\",\r",
+                  "    \"steps\": [\"Tighten the front of your thigh and lift one leg straight up.\", \"Lower the leg slowly and in a controlled manner back to the starting position.\"],\r",
+                  "    \"repetitions\": \"4\",\r",
+                  "    \"repetitionMethod\": {\r",
+                  "        \"type\": \"turns\",\r",
+                  "        \"number\": \"15\"\r",
+                  "    }\r",
+                  "}\r",
+                  "\r",
+                  "// Store the payload in a runtime-only variable \r",
+                  "pm.variables.set('payload', JSON.stringify(payload));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have the `id` property in the response object\", function () {\r",
+                  "    pm.expect(response.id).to.be.a('string');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have status 'Created'\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{{payload}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_03}}/exercises",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_03}}",
+                "exercises"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Get exercises for program 01",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an array in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('array');\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "// Test structure of the first object\r",
+                  "pm.test(\"First object should have required fields\", function () {\r",
+                  "    const first = response[0];\r",
+                  "    pm.expect(first).to.have.property(\"title\");\r",
+                  "    pm.expect(first).to.have.property(\"startingPosition\");\r",
+                  "    pm.expect(first).to.have.property(\"steps\");\r",
+                  "    pm.expect(first).to.have.property(\"repetitions\");\r",
+                  "    pm.expect(first).to.have.property(\"repetitionMethod\");\r",
+                  "    pm.expect(first).to.have.property(\"creator\");\r",
+                  "    pm.expect(first).to.have.property(\"id\");\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_03}}/exercises",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_03}}",
+                "exercises"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Get programs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an array in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('array');\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  "// Test structure of the first object\r",
+                  "pm.test(\"First object should have required fields\", function () {\r",
+                  "    const first = response[0];\r",
+                  "    pm.expect(first).to.have.property(\"title\");\r",
+                  "    pm.expect(first).to.have.property(\"description\");\r",
+                  "    pm.expect(first).to.have.property(\"creator\");\r",
+                  "    pm.expect(first).to.have.property(\"id\");\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Delete program 01 with exercises",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should have status '204'\", function () {\r",
+                  "    pm.response.to.have.status(204);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_03}}",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_03}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Get program [after delete]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should have status '404'\", function () {\r",
+                  "    pm.response.to.have.status(404);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_03}}",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_03}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Get exercises for program [after delete]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an empty array in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('array').that.is.empty;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have status '200'\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/{{e2e_program_id_03}}/exercises",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                "{{e2e_program_id_03}}",
+                "exercises"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Logout",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/accounts/logout",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Invalid requests",
+      "item": [
+        {
+          "name": "E2E - Register account with existing username",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate the payload data for the request\r",
+                  "\r",
+                  "let payload = {\r",
+                  "  \"username\": \"{{testuser-username}}\",\r",
+                  "  \"password\": \"{{testuser-password}}\",\r",
+                  "  \"firstName\": \"Unit\",\r",
+                  "  \"lastName\": \"Tester\",\r",
+                  "  \"email\": \"unit-test-01@example.com\"\r",
+                  "}\r",
+                  "\r",
+                  "// Store the payload in a runtime-only variable \r",
+                  "pm.variables.set('payload', JSON.stringify(payload));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should receive status 409 Conflict\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
+                  "    pm.expect(response.message).to.eql('Username already taken.');\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{{payload}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/accounts/register",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Register account with missing information",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate the payload data for the request\r",
+                  "\r",
+                  "let payload = {\r",
+                  "  \"username\": \"unit-test-02\",\r",
+                  "  \"password\": \"new-very-secure-password\",\r",
+                  "  \"lastName\": \"Tester\",\r",
+                  "  \"email\": \"unit-test-01@myveryownunseriouscompany.com\"\r",
+                  "}\r",
+                  "\r",
+                  "// Store the payload in a runtime-only variable \r",
+                  "pm.variables.set('payload', JSON.stringify(payload));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should receive status 400 Bad request\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{{payload}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/accounts/register",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Register account with invalid email",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate the payload data for the request\r",
+                  "\r",
+                  "let payload = {\r",
+                  "  \"username\": \"unit-test-01\",\r",
+                  "  \"password\": \"new-very-secure-password\",\r",
+                  "  \"firstName\": \"Unit\",\r",
+                  "  \"lastName\": \"Tester\",\r",
+                  "  \"email\": \"invalid-email\"\r",
+                  "}\r",
+                  "\r",
+                  "// Store the payload in a runtime-only variable \r",
+                  "pm.variables.set('payload', JSON.stringify(payload));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Should have a valid JSON format response body\", function () {\r",
+                  "    pm.expect(response).to.not.be.undefined;\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should have an object in the response\", function () {\r",
+                  "    pm.expect(response).to.be.an('object');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Should receive status 400 Bad request\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{{payload}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/accounts/register",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2E - Get programs [after logout]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should have status '401'\", function () {\r",
+                  "    pm.response.to.have.status(401);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1/programs/",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "programs",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reset collection",
+      "item": [
+        {
+          "name": "Reset variables",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.clear();"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{myphysioBaseUrl}}/api/v1",
+              "host": [
+                "{{myphysioBaseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1"
+              ]
+            },
+            "description": "Resets all variables that have been used by the tests."
+          },
+          "response": []
+        }
+      ],
+      "description": "Contains a reset request to ensure no variables are saved between different test runs."
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}
