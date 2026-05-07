@@ -126,7 +126,7 @@ jobs:
           ssh -i ~/.ssh/id_ed25519 $PRODUCTION_HOST_USER@$PRODUCTION_HOST << EOF
             cd $PRODUCTION_HOST_DEPLOY_PATH
 
-          cat > .env.production << ENVEOF
+          cat > .env << ENVEOF
           IMAGE_TAG=$IMAGE_TAG
           REGISTRY=$REGISTRY
           PRODUCTION_HOST=$PRODUCTION_HOST
@@ -162,7 +162,6 @@ jobs:
             cd $PRODUCTION_HOST_DEPLOY_PATH
             docker compose -p myphysiotrainer \
             -f docker-compose.yml \
-            --env-file .env.production \
             up -d
             exit
           EOF

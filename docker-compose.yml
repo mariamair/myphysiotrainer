@@ -15,19 +15,9 @@ services:
     image: ghcr.io/mariamair/myphysiotrainer:latest
     restart: on-failure
     env_file:
-      - .env.production
+      - .env
     environment:
-      NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
-      BASE_URL: ${BASE_URL}
-      API_URL: ${API_URL}
-      SESSION_NAME: ${SESSION_NAME}
-      SESSION_SECRET: ${SESSION_SECRET}
-      LOG_LEVEL: ${LOG_LEVEL}
-      LOGGER_COMBINED_LOG_FILE: ${LOGGER_COMBINED_LOG_FILE}
-      LOGGER_ERROR_LOG_FILE: ${LOGGER_ERROR_LOG_FILE}
-      LOGGER_UNCAUGHT_EXCEPTION_LOG_FILE: ${LOGGER_UNCAUGHT_EXCEPTION_LOG_FILE}
-      DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
     ports:
       - "${PORT}:${PORT}"
     depends_on:
