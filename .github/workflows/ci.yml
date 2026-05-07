@@ -125,27 +125,26 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 $PRODUCTION_HOST_USER@$PRODUCTION_HOST << EOF
             cd $PRODUCTION_HOST_DEPLOY_PATH
-            
-            # Create .env file directly on server
-            cat > .env << ENVEOF
-            IMAGE_TAG=$IMAGE_TAG
-            REGISTRY=$REGISTRY
-            SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
-            PRODUCTION_HOST=$PRODUCTION_HOST
-            PRODUCTION_HOST_USER=$PRODUCTION_HOST_USER
-            PRODUCTION_HOST_DEPLOY_PATH=$PRODUCTION_HOST_DEPLOY_PATH
-            DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING }}
-            NODE_ENV=production
-            PORT=8080
-            BASE_URL=/
-            API_URL=http://localhost:8080/api/v1
-            SESSION_NAME=${{ secrets.SESSION_NAME }}
-            SESSION_SECRET=${{ secrets.SESSION_SECRET }}
-            LOG_LEVEL=info
-            LOGGER_COMBINED_LOG_FILE=${{ secrets.LOGGER_COMBINED_LOG_FILE }}
-            LOGGER_ERROR_LOG_FILE=${{ secrets.LOGGER_ERROR_LOG_FILE }}
-            LOGGER_UNCAUGHT_EXCEPTION_LOG_FILE=${{ secrets.LOGGER_UNCAUGHT_EXCEPTION_LOG_FILE }}
-            ENVEOF
+
+          cat > .env.production << ENVEOF
+          IMAGE_TAG=$IMAGE_TAG
+          REGISTRY=$REGISTRY
+          SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
+          PRODUCTION_HOST=$PRODUCTION_HOST
+          PRODUCTION_HOST_USER=$PRODUCTION_HOST_USER
+          PRODUCTION_HOST_DEPLOY_PATH=$PRODUCTION_HOST_DEPLOY_PATH
+          DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING }}
+          NODE_ENV=production
+          PORT=8080
+          BASE_URL=/
+          API_URL=http://localhost:8080/api/v1
+          SESSION_NAME=${{ secrets.SESSION_NAME }}
+          SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+          LOG_LEVEL=info
+          LOGGER_COMBINED_LOG_FILE=${{ secrets.LOGGER_COMBINED_LOG_FILE }}
+          LOGGER_ERROR_LOG_FILE=${{ secrets.LOGGER_ERROR_LOG_FILE }}
+          LOGGER_UNCAUGHT_EXCEPTION_LOG_FILE=${{ secrets.LOGGER_UNCAUGHT_EXCEPTION_LOG_FILE }}
+          ENVEOF
           EOF
       
       - name: Copy docker-compose files to server
