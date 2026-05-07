@@ -10,6 +10,8 @@ services:
     image: null
     build:
       dockerfile: Dockerfile.development
+    env_file:
+      - .env.development
       
     # Mount the source to '/usr/src/app/src' in the container to allow for live code updates.
     # Mount the 'node_modules' directory in the container to avoid conflicts with the host.
