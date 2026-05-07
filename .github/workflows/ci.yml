@@ -129,7 +129,6 @@ jobs:
           cat > .env.production << ENVEOF
           IMAGE_TAG=$IMAGE_TAG
           REGISTRY=$REGISTRY
-          SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
           PRODUCTION_HOST=$PRODUCTION_HOST
           PRODUCTION_HOST_USER=$PRODUCTION_HOST_USER
           PRODUCTION_HOST_DEPLOY_PATH=$PRODUCTION_HOST_DEPLOY_PATH
@@ -158,10 +157,9 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
             $PRODUCTION_HOST_USER@$PRODUCTION_HOST << EOF
-            pwd && ls -la
-            echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> $PRODUCTION_HOST_DEPLOY_PATH/.env.production
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             docker pull ghcr.io/${{ github.repository_owner }}/myphysiotrainer:latest
+            docker logout ghcr.io
             cd $PRODUCTION_HOST_DEPLOY_PATH
             docker compose -p myphysiotrainer \
             -f docker-compose.yml \
