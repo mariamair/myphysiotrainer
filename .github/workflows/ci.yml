@@ -86,6 +86,7 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
+    needs: [build, automated-api-tests, lint-backend, lint-frontend]
     env:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       PRODUCTION_HOST: ${{ secrets.PRODUCTION_HOST }}
@@ -125,7 +126,8 @@ jobs:
           PRODUCTION_HOST_USER: ${{ secrets.PRODUCTION_HOST_USER }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET}}
         run: |
-          ssh -tt -o StrictHostKeyChecking=no $PRODUCTION_HOST_USER@$PRODUCTION_HOST << EOF
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
+            $PRODUCTION_HOST_USER@$PRODUCTION_HOST << EOF
             pwd && ls -la
             echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> $PRODUCTION_HOST_DEPLOY_PATH/.env.production
             echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u "${{ github.actor }}" --password-stdin
