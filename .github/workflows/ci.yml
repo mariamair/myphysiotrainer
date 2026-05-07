@@ -150,7 +150,6 @@ jobs:
         run: |
           scp -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 \
             docker-compose.yml \
-            docker-compose.production.yml \
             $PRODUCTION_HOST_USER@$PRODUCTION_HOST:$PRODUCTION_HOST_DEPLOY_PATH/
 
       - name: Pull and Deploy Docker Image via SSH
