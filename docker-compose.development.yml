@@ -1,10 +1,13 @@
 # Docker Compose file for development settings. Extends the base docker-compose.yaml file.
 # Sets volumes for live code updates, and environment variables.
+# Suppresses all logs from MongoDB that are not errors or warnings.
 
 services:
   mongodb:
+    attach: false
 
   app:
+    image: null
     build:
       dockerfile: Dockerfile.development
       

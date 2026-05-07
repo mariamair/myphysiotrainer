@@ -1,19 +1,19 @@
 services: 
   mongodb:
-    image: mongo:8.0.8
+    image: mongo:8.0.20
+    restart: unless-stopped
     volumes:
       - ./.volumes/mongodb:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017 --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   app:
-    build: 
-      context: .
-      tags: 
-        - myphysiotrainer:1.0.1
-    depends_on:
-      - mongodb
+    image: ghcr.io/mariamair/myphysiotrainer:latest
     restart: on-failure
-    ports:
-      - "8080:${PORT}"
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
@@ -26,5 +26,10 @@ services:
       LOGGER_ERROR_LOG_FILE: ${LOGGER_ERROR_LOG_FILE}
       LOGGER_UNCAUGHT_EXCEPTION_LOG_FILE: ${LOGGER_UNCAUGHT_EXCEPTION_LOG_FILE}
       DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      mongodb:
+        condition: service_healthy
 
 

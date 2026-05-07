@@ -1,9 +1,0 @@
-# Docker Compose file for production settings. Extends the base docker-compose.yaml file.
-
-services:
-  mongodb:
-
-  app:
-    image: ghcr.io/mariamair/myphysiotrainer:latest
-    build:
-      dockerfile: Dockerfile.production
