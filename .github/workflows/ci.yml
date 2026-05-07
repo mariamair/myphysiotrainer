@@ -39,7 +39,7 @@ jobs:
       packages: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -58,7 +58,7 @@ jobs:
     if: ${{ github.event.inputs.run_tests != 'false' }}
     needs: build
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Newman
         run: npm install -g newman
@@ -77,8 +77,8 @@ jobs:
     if: ${{ github.event.inputs.run_lint_backend != 'false' }}
     needs: build
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
       - run: npm install
       - run: npx eslint ./src
 
@@ -88,8 +88,8 @@ jobs:
     if: ${{ github.event.inputs.run_lint_frontend != 'false' }}
     needs: build 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
       - run: npm install
       - run: npx eslint ./public
 
@@ -111,7 +111,7 @@ jobs:
       REGISTRY: ghcr.io/${{ github.repository }}
       IMAGE_TAG: ${{ github.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up SSH
         run: |
