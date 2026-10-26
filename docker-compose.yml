@@ -1,4 +1,8 @@
-services: 
+# Base Docker Compose file. Used as-is on the production server.
+# For local development, combine it with docker-compose.development.yml
+# (see the docker:* scripts in package.json).
+
+services:
   mongodb:
     image: mongo:8.0.20
     restart: unless-stopped
@@ -13,15 +17,11 @@ services:
 
   app:
     image: ghcr.io/mariamair/myphysiotrainer:latest
-    restart: on-failure
+    restart: unless-stopped
     env_file:
       - .env
-    environment:
-      PORT: ${PORT}
     ports:
-      - "${PORT}:${PORT}"
+      - "${PORT:-8080}:${PORT:-8080}"
     depends_on:
       mongodb:
         condition: service_healthy
-
-

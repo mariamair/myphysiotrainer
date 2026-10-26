@@ -118,8 +118,7 @@ typings/
 
 # dotenv environment variables file
 .env*
-!.env.production.example
-!.env.development.example
+!.env.example
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

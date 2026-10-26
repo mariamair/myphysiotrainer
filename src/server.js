@@ -104,7 +104,8 @@ try {
   app.use(errorHandler.globalError)
 
   // Starts the HTTP server listening for connections.
-  const server = app.listen(process.env.PORT, () => {
+  const port = process.env.PORT || 8080
+  const server = app.listen(port, () => {
     logger.info(`Server running at http://localhost:${server.address().port}`)
     logger.info('Press Ctrl-C to terminate...')
   })
